@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabalho: Modal Aeroviário</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        aviation: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                            dark: '#0f172a'
+                        },
+                        meli: '#FFE600',
+                        pfizer: '#0093D0',
+                        tech: '#06b6d4',
+                        safety: '#f97316' // Laranja para Henry (Equipamentos)
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'typewriter': 'typewriter 4s steps(44) 1s 1 normal both',
+                        'blink': 'blink 1s steps(44) infinite',
+                        'bounce-once': 'bounce 0.5s ease-in-out',
+                        'shimmer': 'shimmer 2s infinite linear',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        typewriter: {
+                            '0%': { width: '0' },
+                            '100%': { width: '100%' },
+                        },
+                        blink: {
+                            '0%, 100%': { borderColor: 'transparent' },
+                            '50%': { borderColor: '#0ea5e9' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200px 0' },
+                            '100%': { backgroundPosition: 'calc(200px + 100%) 0' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at top center, #1e293b 0%, #0f172a 100%);
+        }
+
+        .radar-grid {
+            background-image: linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+        }
+
+        /* Classes para animação de Scroll (Intersection Observer) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Spotlight Effect CSS */
+        .spotlight-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.06), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .spotlight-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Focus Effect for Ana's Section */
+        .focus-group:hover .focus-item:not(:hover) {
+            opacity: 0.4;
+            filter: grayscale(0.5);
+            transform: scale(0.98);
+        }
+
+        .focus-item {
+            transition: all 0.4s ease;
+        }
+
+        .focus-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(14, 165, 233, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        /* Typewriter Effect */
+        .typewriter-container {
+            overflow: hidden;
+            border-right: 3px solid;
+            white-space: nowrap;
+            animation: typewriter 4s steps(44) 1s 1 normal both,
+                blink 1s steps(44) infinite;
+        }
+
+        /* Shimmer Effect */
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background-size: 200px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        /* Card Glow Effect */
+        .card-glow {
+            position: relative;
+        }
+
+        .card-glow::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #0ea5e9, #06b6d4, #0ea5e9);
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-glow:hover::after {
+            opacity: 1;
+        }
+
+        /* Pulse animation for safety */
+        .pulse-safety {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-aviation-dark text-slate-200 antialiased selection:bg-aviation-500 selection:text-white overflow-x-hidden">
+
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 h-1 bg-aviation-500 z-[60] transition-all duration-300" id="scroll-progress"
+        style="width: 0%"></div>
+
+    <!-- Botão Voltar ao Topo -->
+    <button onclick="scrollToTop()"
+        class="fixed bottom-8 right-8 w-12 h-12 bg-aviation-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg z-50 hidden"
+        id="back-to-top">
+        <i class="ph ph-caret-up text-2xl"></i>
+    </button>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass-card border-b-0 top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-airplane-tilt text-aviation-500 text-2xl animate-pulse"></i>
+                    <span class="font-display font-bold text-xl tracking-tight text-white">GRUPO<span
+                            class="text-aviation-500">AÉREO</span></span>
+                </div>
+                <div class="hidden xl:block">
+                    <div class="ml-10 flex items-baseline space-x-2">
+                        <a href="#grupo"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-sm font-medium transition-colors group relative">
+                            <span>Início</span>
+                            <span
+                                class="absolute bottom-0 left-0 w-0 h-0.5 bg-aviation-500 group-hover:w-full transition-all duration-300"></span>
+                        </a>
+                        <a href="#ana"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-aviation-500/20 bg-aviation-500/10 hover:scale-105 transform transition-transform">Ana</a>
+                        <a href="#marcos"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-purple-500/20 bg-purple-500/10 hover:scale-105 transform transition-transform">Marcos</a>
+                        <a href="#tais"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-yellow-500/20 bg-yellow-500/10 hover:scale-105 transform transition-transform">Taís</a>
+                        <a href="#luiza"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-cyan-500/20 bg-cyan-500/10 hover:scale-105 transform transition-transform">Luíza</a>
+                        <a href="#henry"
+                            class="nav-link hover:text-aviation-500 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-orange-500/20 bg-orange-500/10 hover:scale-105 transform transition-transform">Henry</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="grupo" class="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+                class="absolute top-1/4 left-1/4 w-96 h-96 bg-aviation-500/10 rounded-full blur-3xl animate-pulse-slow">
+            </div>
+            <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
+                style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="relative max-w-4xl mx-auto px-4 text-center z-10 reveal active">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-aviation-500/10 border border-aviation-500/20 text-aviation-500 text-sm font-medium mb-8 hover:bg-aviation-500/20 transition-colors cursor-default hover:scale-105 transform transition-transform"
+                onclick="animateElement(this)">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-aviation-500 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-aviation-500"></span>
+                </span>
+                Trabalho Acadêmico • Logística
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-display font-bold text-white mb-6 leading-tight">
+                MODAL <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-aviation-500 to-purple-400 animate-pulse">AEROVIÁRIO</span>
+            </h1>
+
+            <div class="typewriter-container inline-block text-xl text-slate-400 mb-12">
+                Análise completa sobre características, movimentação de produtos, tecnologias e segurança no transporte
+                aéreo.
+            </div>
+
+            <div
+                class="glass-card rounded-2xl p-8 max-w-2xl mx-auto border-t-4 border-t-aviation-500 shadow-2xl shadow-aviation-900/50 hover:shadow-aviation-500/30 transition-shadow card-glow">
+                <h3 class="text-white font-bold mb-4 flex items-center justify-center gap-2">
+                    <i class="ph ph-users animate-bounce"></i> Integrantes do Grupo
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-sm text-slate-300">
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50"
+                        onclick="showMemberInfo('tais')">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 group-hover:scale-150 transition-transform">
+                        </div>
+                        <span class="cursor-help" title="Clique para ver mais">Taís De Oliveira Sant Anna Mariano</span>
+                    </div>
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50"
+                        onclick="showMemberInfo('marcos')">
+                        <div class="w-2 h-2 rounded-full bg-purple-500 group-hover:scale-150 transition-transform">
+                        </div>
+                        <span class="cursor-help" title="Clique para ver mais">Marcos Thiago Ferreira Oliveira
+                            Santos</span>
+                    </div>
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50 shimmer-effect"
+                        onclick="showMemberInfo('henry')">
+                        <div
+                            class="w-2 h-2 rounded-full bg-safety group-hover:scale-150 transition-transform animate-pulse">
+                        </div>
+                        <span class="cursor-help font-medium" title="Clique para ver mais">Henry da Silva
+                            Huguenin</span>
+                    </div>
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50"
+                        onclick="showMemberInfo('matheus')">
+                        <div class="w-2 h-2 rounded-full bg-slate-500 group-hover:scale-150 transition-transform"></div>
+                        <span class="cursor-help" title="Clique para ver mais">Matheus Silva De Souza Reis</span>
+                    </div>
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50"
+                        onclick="showMemberInfo('ana')">
+                        <div class="w-2 h-2 rounded-full bg-aviation-500 group-hover:scale-150 transition-transform">
+                        </div>
+                        <span class="cursor-help" title="Clique para ver mais">Ana Beatriz de Jesus Fraga</span>
+                    </div>
+                    <div class="flex items-center gap-2 group hover:text-white transition-colors p-2 rounded hover:bg-slate-800/50 shimmer-effect"
+                        onclick="showMemberInfo('luiza')">
+                        <div
+                            class="w-2 h-2 rounded-full bg-tech group-hover:scale-150 transition-transform animate-pulse">
+                        </div>
+                        <span class="cursor-help font-medium text-tech" title="Clique para ver mais">Luíza dos Santos
+                            Campos da Silva</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <a href="#ana"
+                    class="scroll-btn inline-flex flex-col items-center gap-2 text-slate-500 hover:text-white transition-colors animate-bounce">
+                    <span class="text-sm">Role para começar</span>
+                    <i class="ph ph-caret-down text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ANA BEATRIZ -->
+    <section id="ana" class="py-24 bg-slate-900 relative border-t border-slate-800">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-aviation-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-aviation-500/20 flex items-center gap-2 whitespace-nowrap z-20 hover:scale-110 transition-transform cursor-pointer group"
+            onclick="scrollToTop()">
+            <i class="ph ph-user group-hover:animate-bounce"></i> Ana Beatriz: Características
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-16 text-center reveal">
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">O que é o Modal Aeroviário?</h2>
+                <div class="max-w-3xl mx-auto glass-card p-8 rounded-2xl text-lg text-slate-300 leading-relaxed text-justify hover:bg-slate-800 transition-colors cursor-pointer"
+                    onclick="toggleText(this, 'ana')">
+                    <p id="ana-text">
+                        O modal aeroviário utiliza aeronaves para mover mercadorias e passageiros de forma <strong
+                            class="text-white highlight">rápida</strong> e <strong
+                            class="text-white highlight">eficiente</strong>.
+                        Geralmente, é escolhido para transportar produtos de alto valor, itens sensíveis ao tempo ou
+                        cargas que precisam chegar com urgência.
+                        Apesar de ser mais caro, destaca-se pela agilidade em percorrer longas distâncias em pouco
+                        tempo.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 focus-group reveal">
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('velocidade')">
+                    <div
+                        class="w-12 h-12 bg-aviation-500/20 rounded-lg flex items-center justify-center text-aviation-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-rocket-launch text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Velocidade Extrema</h4>
+                    <p class="text-slate-400 text-sm">É o modal mais rápido para mover mercadorias, superando todos os
+                        outros modais.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('seguranca')">
+                    <div
+                        class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center text-green-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-shield-check text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Segurança Rígida</h4>
+                    <p class="text-slate-400 text-sm">Segue padrões rígidos que reduzem drasticamente riscos de perdas,
+                        danos ou furtos.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('cobertura')">
+                    <div
+                        class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-globe-hemisphere-west text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Cobertura Global</h4>
+                    <p class="text-slate-400 text-sm">Grande rede de aeroportos pelo mundo, oferecendo conexão
+                        internacional ampla.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('custo')">
+                    <div
+                        class="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center text-red-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-currency-dollar text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Alto Custo</h4>
+                    <p class="text-slate-400 text-sm">É o modal mais caro. Gastos com combustível, manutenção e taxas
+                        aeroportuárias.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('infra')">
+                    <div
+                        class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center text-orange-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-buildings text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Dependência de Infra</h4>
+                    <p class="text-slate-400 text-sm">Precisa de aeroportos preparados e depende de condições climáticas
+                        favoráveis.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 focus-item cursor-pointer group"
+                    onclick="showDetailModal('capacidade')">
+                    <div
+                        class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 mb-4 group-hover:animate-bounce">
+                        <i class="ph ph-package text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">Capacidade Limitada</h4>
+                    <p class="text-slate-400 text-sm">Menor capacidade comparada a navios. Não ideal para cargas
+                        volumosas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MARCOS -->
+    <section id="marcos" class="py-24 bg-aviation-dark relative border-t border-slate-800">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-purple-500/20 flex items-center gap-2 whitespace-nowrap z-20 hover:scale-110 transition-transform cursor-pointer group"
+            onclick="scrollToTop()">
+            <i class="ph ph-user group-hover:animate-bounce"></i> Marcos Thiago: Produtos & Lógica
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-16 items-center mb-20 reveal">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-white mb-6">A Lógica da Carga Aérea</h2>
+                    <p class="text-slate-400 text-lg mb-8 leading-relaxed">
+                        Como a Ana explicou, o custo é alto. Então, para valer a pena, seguimos a regra de ouro:
+                        <strong class="text-purple-400 animate-pulse cursor-help"
+                            onclick="showDetailModal('regra')">Alto Valor Agregado e Baixo Peso</strong>.
+                    </p>
+                    <div class="flex items-center gap-4 p-4 glass-card rounded-lg border border-slate-700 hover:scale-105 transition-transform cursor-pointer group"
+                        onclick="showDetailModal('valor')">
+                        <div
+                            class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 group-hover:animate-spin">
+                            <i class="ph ph-money text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-semibold">Valor vs Volume</h4>
+                            <p class="text-sm text-slate-400">"Milhões de dólares" em pequenas caixas, não "toneladas de
+                                areia".</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative h-64 glass-card rounded-2xl flex items-center justify-center border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors cursor-pointer"
+                    onclick="animateScale(this)">
+                    <div class="text-center">
+                        <i class="ph ph-scales text-6xl text-purple-500 mb-2 animate-float"></i>
+                        <p class="text-white font-bold">O Equilíbrio Perfeito</p>
+                        <p class="text-sm text-slate-400">Tempo x Dinheiro</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mb-12 reveal">
+                <h3 class="text-3xl font-bold text-white mb-4">
+                    <span class="typewriter-text">Principais Cargas Movimentadas</span>
+                </h3>
+            </div>
+
+            <div id="spotlight-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px] reveal">
+                <div class="spotlight-card md:col-span-2 glass-card rounded-2xl p-8 relative group hover:border-blue-500/50 transition-colors cursor-pointer"
+                    onclick="showDetailModal('pharma')">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-30 transition-opacity">
+                        <i class="ph ph-first-aid text-8xl text-white"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col justify-between h-full pointer-events-none">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2 group-hover:animate-pulse">
+                            <i class="ph ph-pill text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-2">Pharma & Saúde</h3>
+                            <p class="text-slate-400 text-sm">Vacinas, medicamentos termolábeis e órgãos para
+                                transplante. Requer controle total de temperatura.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="spotlight-card glass-card rounded-2xl p-8 relative hover:border-purple-500/50 transition-colors cursor-pointer"
+                    onclick="showDetailModal('tech')">
+                    <div class="relative z-10 pointer-events-none">
+                        <div
+                            class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mb-4 group-hover:animate-pulse">
+                            <i class="ph ph-cpu text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Alta Tecnologia</h3>
+                        <p class="text-sm text-slate-400">Smartphones, chips e processadores. Itens pequenos que valem
+                            muito.</p>
+                    </div>
+                </div>
+                <div class="spotlight-card glass-card rounded-2xl p-8 relative hover:border-green-500/50 transition-colors cursor-pointer"
+                    onclick="showDetailModal('pereciveis')">
+                    <div class="relative z-10 pointer-events-none">
+                        <div
+                            class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-4 group-hover:animate-pulse">
+                            <i class="ph ph-plant text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Perecíveis</h3>
+                        <p class="text-sm text-slate-400">Flores, frutas exóticas e peixes frescos. O tempo é inimigo do
+                            frescor.</p>
+                    </div>
+                </div>
+                <div class="spotlight-card md:col-span-2 glass-card rounded-2xl p-8 relative hover:border-orange-500/50 transition-colors bg-slate-800/40 cursor-pointer"
+                    onclick="showDetailModal('urgente')">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-30 transition-opacity">
+                        <i class="ph ph-engine text-8xl text-white"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col justify-between h-full pointer-events-none">
+                        <div
+                            class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 mb-2 group-hover:animate-pulse">
+                            <i class="ph ph-warning text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-2">Peças Urgentes (AOG)</h3>
+                            <p class="text-slate-400 text-sm">Peças para fábricas paradas ou aviões em solo. O custo da
+                                parada é maior que o frete.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAIS -->
+    <section id="tais" class="py-24 bg-slate-900 relative border-t border-slate-800">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-yellow-500/20 flex items-center gap-2 whitespace-nowrap z-20 hover:scale-110 transition-transform cursor-pointer group"
+            onclick="scrollToTop()">
+            <i class="ph ph-user group-hover:animate-bounce"></i> Taís: Estruturas & Empresas
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-20 reveal">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">Estruturas Necessárias</h2>
+                    <p class="text-slate-400 max-w-2xl mx-auto mb-8">
+                        Para o modal funcionar, não basta apenas o avião. Clique nos ícones abaixo para explorar a
+                        estrutura de solo.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <button onclick="switchTab('terminals')"
+                        class="tab-btn active px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-yellow-500 text-slate-300 transition-all flex items-center gap-2 data-[active=true]:bg-yellow-500 data-[active=true]:text-slate-900 data-[active=true]:font-bold hover:scale-105 transform transition-transform">
+                        <i class="ph ph-warehouse text-xl"></i> Terminais
+                    </button>
+                    <button onclick="switchTab('storage')"
+                        class="tab-btn px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-yellow-500 text-slate-300 transition-all flex items-center gap-2 data-[active=true]:bg-yellow-500 data-[active=true]:text-slate-900 data-[active=true]:font-bold hover:scale-105 transform transition-transform">
+                        <i class="ph ph-package text-xl"></i> Armazenagem
+                    </button>
+                    <button onclick="switchTab('equipment')"
+                        class="tab-btn px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-yellow-500 text-slate-300 transition-all flex items-center gap-2 data-[active=true]:bg-yellow-500 data-[active=true]:text-slate-900 data-[active=true]:font-bold hover:scale-105 transform transition-transform">
+                        <i class="ph ph-truck text-xl"></i> Equipamentos
+                    </button>
+                    <button onclick="switchTab('security')"
+                        class="tab-btn px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-yellow-500 text-slate-300 transition-all flex items-center gap-2 data-[active=true]:bg-yellow-500 data-[active=true]:text-slate-900 data-[active=true]:font-bold hover:scale-105 transform transition-transform">
+                        <i class="ph ph-shield-check text-xl"></i> Segurança
+                    </button>
+                </div>
+
+                <div
+                    class="glass-card p-8 rounded-2xl text-center min-h-[150px] flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900/50">
+                    <div id="tab-content">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="relative p-1 rounded-3xl bg-gradient-to-r from-yellow-500/20 to-blue-500/20 reveal hover:scale-[1.02] transition-transform">
+                <div class="bg-slate-900 rounded-[22px] p-8 md:p-12">
+                    <h3 class="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                        <i class="ph ph-briefcase-metal animate-pulse"></i>Quem usa esse modal?
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="group relative overflow-hidden rounded-2xl bg-[#FFE600] p-6 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,230,0,0.3)] cursor-pointer"
+                            onclick="showDetailModal('meli')">
+                            <div class="absolute -right-4 -top-4 opacity-20 transition-transform group-hover:rotate-12">
+                                <i class="ph ph-handshake text-9xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                                        <i class="ph ph-shopping-cart text-3xl text-slate-900"></i>
+                                    </div>
+                                    <span
+                                        class="font-bold text-lg uppercase tracking-wider opacity-75">E-commerce</span>
+                                </div>
+                                <h4 class="text-3xl font-black mb-2">MERCADO LIVRE</h4>
+                                <p class="font-medium mb-4 opacity-90">Meli Air</p>
+                                <p class="text-sm font-medium leading-relaxed opacity-80">Utiliza frota própria de
+                                    aviões para realizar entregas rápidas ("Full"), alcançando regiões distantes dos
+                                    centros de distribuição.</p>
+                            </div>
+                        </div>
+                        <div class="group relative overflow-hidden rounded-2xl bg-[#0093D0] p-6 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(0,147,208,0.4)] cursor-pointer"
+                            onclick="showDetailModal('pfizer')">
+                            <div class="absolute -right-4 -top-4 opacity-20 transition-transform group-hover:rotate-12">
+                                <i class="ph ph-flask text-9xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                                        <i class="ph ph-heartbeat text-3xl text-white"></i>
+                                    </div>
+                                    <span
+                                        class="font-bold text-lg uppercase tracking-wider opacity-75">Farmacêutico</span>
+                                </div>
+                                <h4 class="text-3xl font-black mb-2">PFIZER</h4>
+                                <p class="font-medium mb-4 opacity-90">Medicamentos & Vacinas</p>
+                                <p class="text-sm font-medium leading-relaxed opacity-90">O transporte de vacinas e
+                                    medicamentos sensíveis exige controle de temperatura rigoroso e velocidade que
+                                    apenas o avião pode oferecer.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LUIZA -->
+    <section id="luiza" class="py-24 bg-aviation-dark relative border-t border-slate-800 overflow-visible">
+        <div class="absolute inset-0 radar-grid opacity-30 pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-aviation-dark via-transparent to-transparent"></div>
+
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-tech text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-tech/20 flex items-center gap-2 whitespace-nowrap z-20 hover:scale-110 transition-transform cursor-pointer group"
+            onclick="scrollToTop()">
+            <i class="ph ph-user group-hover:animate-bounce"></i> Luíza: Tecnologias & Segurança
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">Tecnologia de Ponta</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">
+                    O modal mais seguro do mundo depende de uma rede complexa de
+                    <strong class="text-tech animate-pulse cursor-help" title="Clique para ver estatísticas"
+                        onclick="showStats()">14 tecnologias críticas</strong>
+                    para operar 24/7.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Coluna 1 -->
+                <div class="space-y-6 reveal">
+                    <div class="flex items-center gap-3 text-tech border-b border-tech/30 pb-2 mb-4 cursor-pointer group"
+                        onclick="toggleColumn(this)">
+                        <i
+                            class="ph ph-airplane-in-flight text-2xl animate-pulse group-hover:rotate-180 transition-transform"></i>
+                        <h3 class="font-bold font-mono tracking-wider">01. COCKPIT & NAVEGAÇÃO</h3>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-tech hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('GPS')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">GPS / GNSS</h4>
+                            <i class="ph ph-globe text-tech text-xl animate-spin"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Posição exata no espaço via satélite. Garante
+                            rotas mais curtas e precisas.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-tech hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('PBN')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">PBN (Performance Nav)</h4>
+                            <i class="ph ph-trend-up text-tech text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Navegação baseada em desempenho. Rotas mais
+                            eficientes que economizam combustível.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-tech hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('Fly-by-Wire')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">Fly-by-Wire</h4>
+                            <i class="ph ph-circuitry text-tech text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Substitui cabos mecânicos por sinais
+                            eletrônicos. Comandos mais suaves e automáticos.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-tech hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('CPDLC')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">CPDLC (Data Link)</h4>
+                            <i class="ph ph-chat-text text-tech text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">"WhatsApp" dos pilotos e torre. Mensagens de
+                            texto substituem rádio para evitar erros.</p>
+                    </div>
+                </div>
+                <!-- Coluna 2 -->
+                <div class="space-y-6 reveal" style="transition-delay: 200ms;">
+                    <div class="flex items-center gap-3 text-red-400 border-b border-red-400/30 pb-2 mb-4 cursor-pointer group"
+                        onclick="toggleColumn(this)">
+                        <i
+                            class="ph ph-shield-warning text-2xl animate-pulse group-hover:rotate-180 transition-transform"></i>
+                        <h3 class="font-bold font-mono tracking-wider">02. SEGURANÇA DE VOO</h3>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-red-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('TCAS')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">TCAS (Anti-Colisão)</h4>
+                            <i class="ph ph-warning-circle text-red-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Detecta outros aviões próximos e ordena
+                            subir/descer para evitar batidas.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-red-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('EGPWS')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">EGPWS (Proximidade)</h4>
+                            <i class="ph ph-mountains text-red-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Alerta se o avião chegar perigosamente perto
+                            do solo ou montanhas.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-red-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('ADS-B')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">ADS-B</h4>
+                            <i class="ph ph-broadcast text-red-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">A aeronave "grita" sua posição, altitude e
+                            velocidade para todos ao redor em tempo real.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-red-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('ILS')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">ILS (Pouso Instrumento)</h4>
+                            <i class="ph ph-airplane-landing text-red-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Guia o avião até a pista em neblina total ou
+                            chuva forte.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-red-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('Radar')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">Radares</h4>
+                            <i class="ph ph-radar text-red-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Monitoramento de tráfego aéreo primário e
+                            secundário pelos aeroportos.</p>
+                    </div>
+                </div>
+                <!-- Coluna 3 -->
+                <div class="space-y-6 reveal" style="transition-delay: 400ms;">
+                    <div class="flex items-center gap-3 text-green-400 border-b border-green-400/30 pb-2 mb-4 cursor-pointer group"
+                        onclick="toggleColumn(this)">
+                        <i
+                            class="ph ph-wifi-high text-2xl animate-pulse group-hover:rotate-180 transition-transform"></i>
+                        <h3 class="font-bold font-mono tracking-wider">03. OPERAÇÕES & DADOS</h3>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-green-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('RFID')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">RFID (Bagagens)</h4>
+                            <i class="ph ph-tag text-green-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Etiquetas inteligentes que rastreiam cada mala
+                            em tempo real, evitando extravios.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-green-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('IoT')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">Manutenção IoT</h4>
+                            <i class="ph ph-wrench text-green-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Sensores prevêem falhas mecânicas antes que
+                            aconteçam (Manutenção Preditiva).</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-green-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('AODB')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">AODB (Automação)</h4>
+                            <i class="ph ph-desktop text-green-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">O "cérebro" do aeroporto. Gerencia horários,
+                            portões e pistas automaticamente.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-green-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('3D-Scan')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">Scanners 3D</h4>
+                            <i class="ph ph-scan text-green-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Inspeção de segurança avançada (Body Scan)
+                            para identificar ameaças.</p>
+                    </div>
+                    <div class="tech-card glass-card p-5 rounded-lg border-l-4 border-l-green-500 hover:bg-slate-800/80 transition-all hover:translate-x-2 cursor-pointer"
+                        onclick="showTechDetail('Conectividade')">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">Conectividade</h4>
+                            <i class="ph ph-wifi-high text-green-400 text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">Internet via satélite para operações e
+                            conforto a bordo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Interativo -->
+            <div class="mt-20 reveal">
+                <div class="glass-card p-8 rounded-2xl text-center">
+                    <h3 class="text-2xl font-bold text-white mb-4">Quiz Interativo: Teste seu Conhecimento</h3>
+                    <p class="text-slate-400 mb-6">O que você aprendeu sobre o modal aeroviário?</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <button onclick="checkAnswer(this, false)"
+                            class="quiz-btn p-4 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-left group">
+                            <span class="text-white font-medium">O modal aeroviário é ideal para transportar cargas
+                                volumosas e de baixo valor.</span>
+                            <span class="text-sm text-slate-400 group-hover:text-white">Verdadeiro ou Falso?</span>
+                        </button>
+                        <button onclick="checkAnswer(this, true)"
+                            class="quiz-btn p-4 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-left group">
+                            <span class="text-white font-medium">O transporte aéreo é o mais rápido, mas também o mais
+                                caro.</span>
+                            <span class="text-sm text-slate-400 group-hover:text-white">Verdadeiro ou Falso?</span>
+                        </button>
+                        <button onclick="checkAnswer(this, true)"
+                            class="quiz-btn p-4 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-left group">
+                            <span class="text-white font-medium">Vacinas e medicamentos são transportados frequentemente
+                                por avião.</span>
+                            <span class="text-sm text-slate-400 group-hover:text-white">Verdadeiro ou Falso?</span>
+                        </button>
+                        <button onclick="checkAnswer(this, false)"
+                            class="quiz-btn p-4 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-left group">
+                            <span class="text-white font-medium">O modal aeroviário não depende de condições
+                                climáticas.</span>
+                            <span class="text-sm text-slate-400 group-hover:text-white">Verdadeiro ou Falso?</span>
+                        </button>
+                    </div>
+                    <div id="quiz-feedback" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HENRY: EQUIPAMENTOS E VEÍCULOS -->
+    <section id="henry" class="py-24 bg-slate-900 relative border-t border-slate-800">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-safety text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-safety/20 flex items-center gap-2 whitespace-nowrap z-20 hover:scale-110 transition-transform cursor-pointer group"
+            onclick="scrollToTop()">
+            <i class="ph ph-user group-hover:animate-bounce"></i> Henry: Equipamentos & Veículos
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">Máquinas do Aeroporto</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">
+                    Conheça a frota pesada e os equipamentos que operam nos bastidores para garantir que o voo aconteça.
+                </p>
+            </div>
+
+            <!-- Grid de Equipamentos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+
+                <!-- 1. Aeronaves -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('aeronaves')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-airplane text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">01</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Aeronaves</h3>
+                    <p class="text-sm text-slate-400 mb-3">Aviões comerciais, cargueiros, executivos e helicópteros.</p>
+                    <div class="text-xs text-safety font-medium">Função: Transportam passageiros e cargas.</div>
+                </div>
+
+                <!-- 2. Veículos de Solo -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('veiculos')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-car text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">02</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Veículos de Solo</h3>
+                    <p class="text-sm text-slate-400 mb-3">Carros de inspeção ("Follow Me") e Caminhões de Bombeiros.
+                    </p>
+                    <div class="text-xs text-safety font-medium">Função: Orientam movimentação e atendem emergências.
+                    </div>
+                </div>
+
+                <!-- 3. Apoio (GPU/ACU) -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('apoio')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-lightning text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">03</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Equipamentos de Apoio</h3>
+                    <p class="text-sm text-slate-400 mb-3">GPU (Energia), ACU (Ar Condicionado) e ASU (Partida).</p>
+                    <div class="text-xs text-safety font-medium">Função: Mantêm o avião ligado no solo sem usar motores.
+                    </div>
+                </div>
+
+                <!-- 4. Embarque -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('embarque')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-stairs text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">04</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Embarque & Desembarque</h3>
+                    <p class="text-sm text-slate-400 mb-3">Fingers (Pontes), Escadas Móveis e Ônibus de Pista.</p>
+                    <div class="text-xs text-safety font-medium">Função: Movem passageiros do terminal para a aeronave.
+                    </div>
+                </div>
+
+                <!-- 5. Carga -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('carga')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-conveyor-belt text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">05</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Movimentação de Carga</h3>
+                    <p class="text-sm text-slate-400 mb-3">Loaders, Belt Loaders (esteiras), Dollies e Tratores.</p>
+                    <div class="text-xs text-safety font-medium">Função: Carregam e descarregam malas e pallets no
+                        porão.</div>
+                </div>
+
+                <!-- 6. Rebocagem -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-safety transition-all group cursor-pointer"
+                    onclick="showEquipmentDetail('rebocadores')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-white group-hover:bg-safety group-hover:scale-110 transition-all">
+                            <i class="ph ph-arrows-left-right text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">06</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Rebocadores (Pushback)</h3>
+                    <p class="text-sm text-slate-400 mb-3">Tratores super potentes com ou sem barra (Towbarless).</p>
+                    <div class="text-xs text-safety font-medium">Função: Empurram o avião para trás e o posicionam na
+                        pista.</div>
+                </div>
+
+            </div>
+
+            <!-- Contador Interativo -->
+            <div class="mt-16 reveal">
+                <div class="glass-card p-8 rounded-2xl text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Quantos equipamentos você conhece?</h3>
+                    <div class="flex items-center justify-center gap-4">
+                        <button onclick="decrementCounter()"
+                            class="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center hover:bg-slate-600 transition-colors">
+                            <i class="ph ph-minus text-white"></i>
+                        </button>
+                        <div class="text-4xl font-bold text-safety" id="equipment-counter">0</div>
+                        <button onclick="incrementCounter()"
+                            class="w-12 h-12 bg-safety rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors">
+                            <i class="ph ph-plus text-white"></i>
+                        </button>
+                    </div>
+                    <p class="text-slate-400 mt-4 text-sm">Clique nos + e - para contar quantos equipamentos você já
+                        conhece!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-slate-800 text-center text-slate-500 text-sm bg-slate-900">
+        <p>Desenvolvido pelo Grupo • Logística 2025</p>
+        <p class="mt-2 text-xs text-slate-600">Site interativo criado para apresentação acadêmica</p>
+    </footer>
+
+    <!-- INTERACTIVITY SCRIPTS -->
+    <script>
+        // 1. SCROLL PROGRESS BAR & BACK TO TOP BUTTON
+        window.onscroll = function () {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+
+            // Show/Hide back to top button
+            const backToTopBtn = document.getElementById('back-to-top');
+            if (winScroll > 500) {
+                backToTopBtn.classList.remove('hidden');
+            } else {
+                backToTopBtn.classList.add('hidden');
+            }
+        };
+
+        // 2. INTERSECTION OBSERVER (Scroll Reveal Animation)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+        // 3. SPOTLIGHT EFFECT FOR MARCOS CARDS
+        const cards = document.querySelectorAll('.spotlight-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // 4. TAB SYSTEM FOR TAIS
+        const tabData = {
+            terminals: {
+                title: "Terminais de Carga (TECA)",
+                desc: "Áreas exclusivas para recepção e processamento de mercadorias. Onde a mágica acontece antes do voo.",
+                icon: "ph-warehouse",
+                color: "text-yellow-400"
+            },
+            storage: {
+                title: "Armazenagem Segura",
+                desc: "Espaços com segurança 24h para guardar cargas valiosas antes do embarque ou após o pouso.",
+                icon: "ph-package",
+                color: "text-blue-400"
+            },
+            equipment: {
+                title: "Equipamentos de Solo",
+                desc: "Loaders, Dollys e Tratores de Pista. Sem eles, a carga não entra no avião.",
+                icon: "ph-truck",
+                color: "text-green-400"
+            },
+            security: {
+                title: "Raio-X & Controle",
+                desc: "Sistemas rigorosos de inspeção para garantir que nada perigoso embarque.",
+                icon: "ph-shield-check",
+                color: "text-red-400"
+            }
+        };
+
+        function switchTab(tabId) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.setAttribute('data-active', 'false'));
+            event.currentTarget.setAttribute('data-active', 'true');
+
+            // Update Content with Animation
+            const contentDiv = document.getElementById('tab-content');
+            contentDiv.style.opacity = '0';
+            contentDiv.style.transform = 'translateY(10px)';
+
+            setTimeout(() => {
+                const data = tabData[tabId];
+                contentDiv.innerHTML = `
+                    <i class="ph ${data.icon} text-5xl ${data.color} mb-4 animate-bounce"></i>
+                    <h4 class="text-2xl font-bold text-white mb-2">${data.title}</h4>
+                    <p class="text-slate-300 max-w-lg mx-auto">${data.desc}</p>
+                `;
+                contentDiv.style.opacity = '1';
+                contentDiv.style.transform = 'translateY(0)';
+            }, 200);
+        }
+
+        // Initialize First Tab
+        switchTab('terminals');
+        document.querySelector('.tab-btn').setAttribute('data-active', 'true');
+
+        // 5. NOVAS FUNÇÕES INTERATIVAS
+
+        // Função para scroll suave até o topo
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Efeito de clique nos cards
+        function animateScale(element) {
+            element.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        // Efeito de animação em elemento
+        function animateElement(element) {
+            element.classList.add('animate-bounce-once');
+            setTimeout(() => {
+                element.classList.remove('animate-bounce-once');
+            }, 500);
+        }
+
+        // Alternar texto expandido
+        function toggleText(element, section) {
+            const text = element.querySelector('p');
+            if (text.classList.contains('expanded')) {
+                text.classList.remove('expanded');
+                text.innerHTML = `O modal aeroviário utiliza aeronaves para mover mercadorias e passageiros de forma <strong class="text-white">rápida</strong> e <strong class="text-white">eficiente</strong>. 
+                        Geralmente, é escolhido para transportar produtos de alto valor, itens sensíveis ao tempo ou cargas que precisam chegar com urgência.
+                        Apesar de ser mais caro, destaca-se pela agilidade em percorrer longas distâncias em pouco tempo.`;
+            } else {
+                text.classList.add('expanded');
+                text.innerHTML += `<br><br><span class="text-sm text-slate-400">Curiosidade: Um Boeing 747-8F pode transportar até 140 toneladas de carga, equivalente a 28 elefantes africanos!</span>`;
+            }
+        }
+
+        // Mostrar modal de detalhes
+        function showDetailModal(type) {
+            const modals = {
+                'velocidade': '✈️ Velocidade Extrema\n\nUm avião cargueiro como o Boeing 777F pode cruzar o Atlântico em apenas 7 horas, enquanto um navio levaria 7 dias!',
+                'seguranca': '🛡️ Segurança Rígida\n\nTaxa de perda/dano no transporte aéreo: 0.002% (2 em cada 100.000 embarques).',
+                'cobertura': '🌍 Cobertura Global\n\nMais de 3.800 aeroportos comerciais no mundo servem o transporte aéreo de cargas.',
+                'custo': '💰 Alto Custo\n\nTransportar 1kg de São Paulo a Miami: R$15-20 (aéreo) vs R$2-4 (marítimo).',
+                'infra': '🏗️ Dependência de Infra\n\nUm aeroporto de carga precisa de pelo menos 3.000m de pista para operar aviões cargueiros grandes.',
+                'capacidade': '📦 Capacidade Limitada\n\nMaior avião cargueiro do mundo: Antonov An-225 (carregava até 250 toneladas).',
+                'regra': '⚖️ Regra de Ouro\n\n"Se vale mais de US$10.000/kg, vá de avião; se vale menos de US$1/kg, vá de navio."',
+                'valor': '💎 Valor vs Volume\n\nExemplo: 1kg de diamantes vale US$50.000. 1kg de arroz vale US$0.50.',
+                'pharma': '💊 Pharma & Saúde\n\nVacinas são transportadas entre 2°C e 8°C. Um desvio pode inutilizar um lote inteiro.',
+                'tech': '📱 Alta Tecnologia\n\nChips de smartphone: 50.000 unidades cabem em uma caixa de sapatos. Valor: US$500.000.',
+                'pereciveis': '🌸 Perecíveis\n\nRosas do Quênia para Holanda: Colhidas de manhã, vendidas na Europa à tarde.',
+                'urgente': '⚡ Peças Urgentes (AOG)\n\nUm Boeing 737 parado custa US$50.000 por dia. Vale pagar R$100.000 em frete para uma peça.',
+                'meli': '🛒 Mercado Livre\n\nFrota própria: 5 aviões Cessna Caravan. Entregam em 24h para cidades distantes.',
+                'pfizer': '💉 Pfizer\n\nDurante a pandemia, 2 bilhões de doses de vacina foram transportadas por avião.'
+            };
+
+            alert(modals[type] || 'Informação detalhada sobre este tópico.');
+        }
+
+        // Mostrar detalhes de tecnologia
+        function showTechDetail(tech) {
+            const techDetails = {
+                'GPS': 'Sistema de posicionamento global com precisão de 3-5 metros.',
+                'PBN': 'Reduz consumo de combustível em até 10% com rotas otimizadas.',
+                'Fly-by-Wire': 'Usado desde os anos 80, aumenta segurança e eficiência.',
+                'CPDLC': 'Reduz erros de comunicação em 75% comparado ao rádio.',
+                'TCAS': 'Obrigatório em todos os aviões comerciais desde 1993.',
+                'EGPWS': 'Evitou mais de 100 acidentes desde sua implementação.',
+                'ADS-B': 'Monitoramento em tempo real por satélite.',
+                'ILS': 'Permite pousos com visibilidade zero (CAT III).',
+                'Radar': 'Monitora mais de 10,000 voos simultaneamente.',
+                'RFID': 'Reduz extravio de bagagens em 99%.',
+                'IoT': 'Prevê 85% das falhas antes que ocorram.',
+                'AODB': 'Gerencia mais de 100,000 operações diárias.',
+                '3D-Scan': 'Detecta materiais perigosos em 3 segundos.',
+                'Conectividade': 'Velocidade de até 100 Mbps a 35,000 pés.'
+            };
+
+            alert(`📡 ${tech}\n\n${techDetails[tech]}`);
+        }
+
+        // Mostrar detalhes de equipamentos (Henry)
+        function showEquipmentDetail(type) {
+            const equipmentDetails = {
+                'aeronaves': '✈️ Aeronaves\n\n• Boeing 747-8F: 140 toneladas\n• Airbus A350F: 111 toneladas\n• Antonov An-124: 150 toneladas',
+                'veiculos': '🚗 Veículos de Solo\n\n• Follow Me: Guia aviões na pista\n• ARFF: Caminhão bombeiro aeroportuário\n• De-icer: Remove gelo das asas',
+                'apoio': '⚡ Equipamentos de Apoio\n\n• GPU: Fornece energia em solo\n• ACU: Ar condicionado ground\n• ASU: Ar de partida para motores',
+                'embarque': '🪜 Embarque & Desembarque\n\n• Finger: Ponte de embarque fixa\n• Mobile Stairs: Escadas móveis\n• Passenger Bus: Ônibus de pista',
+                'carga': '📦 Movimentação de Carga\n\n• High Loader: Eleva containers\n• Belt Loader: Esteira para malas\n• Dollies: Carrega ULDs no solo',
+                'rebocadores': '🔀 Rebocadores\n\n• Towbarless: Segura pelo trem\n• Conventional: Usa barra de reboque\n• TaxiBot: Reboque ecológico'
+            };
+
+            alert(equipmentDetails[type] || 'Informação sobre equipamento aeroportuário.');
+        }
+
+        // Alternar coluna (expandir/recolher)
+        function toggleColumn(element) {
+            const column = element.closest('.space-y-6');
+            const cards = column.querySelectorAll('.tech-card');
+
+            cards.forEach(card => {
+                if (card.style.display === 'none') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Quiz interativo
+        function checkAnswer(button, isCorrect) {
+            const feedback = document.getElementById('quiz-feedback');
+            const allButtons = button.parentElement.querySelectorAll('.quiz-btn');
+
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('bg-slate-800', 'hover:bg-slate-700');
+            });
+
+            if (isCorrect) {
+                button.classList.add('bg-green-500', 'text-white');
+                feedback.innerHTML = '<p class="text-green-400 animate-pulse">✅ Resposta correta! Bom trabalho!</p>';
+            } else {
+                button.classList.add('bg-red-500', 'text-white');
+                feedback.innerHTML = '<p class="text-red-400">❌ Resposta incorreta. Tente novamente!</p>';
+            }
+
+            setTimeout(() => {
+                allButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.add('bg-slate-800', 'hover:bg-slate-700');
+                    btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
+                });
+                feedback.innerHTML = '';
+            }, 3000);
+        }
+
+        // Contador de equipamentos (Henry)
+        let equipmentCount = 0;
+
+        function incrementCounter() {
+            equipmentCount++;
+            if (equipmentCount > 6) equipmentCount = 6;
+            updateCounter();
+        }
+
+        function decrementCounter() {
+            equipmentCount--;
+            if (equipmentCount < 0) equipmentCount = 0;
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const counter = document.getElementById('equipment-counter');
+            counter.textContent = equipmentCount;
+
+            // Efeito visual
+            counter.classList.add('scale-125');
+            setTimeout(() => {
+                counter.classList.remove('scale-125');
+            }, 300);
+        }
+
+        // Mostrar estatísticas
+        function showStats() {
+            alert(`📊 ESTATÍSTICAS DO TRANSPORTE AÉREO\n
+            • 35% do valor do comércio internacional viaja de avião
+            • 99.99997% de segurança (1 acidente a cada 2.4 milhões de voos)
+            • 58 milhões de toneladas transportadas anualmente
+            • 0.5% das emissões globais de CO₂
+            • 90 milhões de empregos no setor aéreo mundial`);
+        }
+
+        // Mostrar informações dos membros
+        function showMemberInfo(member) {
+            const memberInfo = {
+                'ana': 'Ana Beatriz: Responsável pela análise das características do modal aeroviário.',
+                'marcos': 'Marcos Thiago: Especialista em produtos e lógica da carga aérea.',
+                'tais': 'Taís: Pesquisou estruturas e empresas que utilizam o modal aéreo.',
+                'luiza': 'Luíza: Estudou as tecnologias e sistemas de segurança do transporte aéreo.',
+                'henry': 'Henry: Analisou equipamentos e veículos utilizados nos aeroportos.',
+                'matheus': 'Matheus: Contribuiu com pesquisas complementares sobre logística aérea.'
+            };
+
+            alert(`👤 ${memberInfo[member] || 'Informações do membro do grupo.'}`);
+        }
+
+        // Efeito de digitação para textos
+        document.addEventListener('DOMContentLoaded', function () {
+            const typewriterElements = document.querySelectorAll('.typewriter-text');
+            typewriterElements.forEach(el => {
+                const text = el.textContent;
+                el.textContent = '';
+                let i = 0;
+                function typeWriter() {
+                    if (i < text.length) {
+                        el.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 50);
+                    }
+                }
+                typeWriter();
+            });
+        });
+
+        // Suavizar navegação por links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
